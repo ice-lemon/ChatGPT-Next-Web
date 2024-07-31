@@ -98,4 +98,15 @@ export const EN_PLUGINS: BuiltinPlugin[] = [
     enable: false,
     onlyNodeRuntime: false,
   },
+  {
+    name: "Post2WordPressTool",
+    toolName: "post2wordpress",
+    lang: "en",
+    description:
+      "A tool to post articles to a WordPress site. It uses the WordPress REST API to create new posts.",
+    builtin: true,
+    createdAt: 1703846656000, // Example timestamp, please modify as needed
+    enable: false,
+    onlyNodeRuntime: false,
+  },
 ];

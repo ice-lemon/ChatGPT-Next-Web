@@ -6,6 +6,7 @@ import { ModelProvider } from "@/app/constant";
 import { OpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { Embeddings } from "langchain/dist/embeddings/base";
 import { OllamaEmbeddings } from "@langchain/community/embeddings/ollama";
+import { Post2WordPressTool } from "@/app/api/langchain-tools/post2wordpress"; // 导入Post2WordPressTool
 
 async function handle(req: NextRequest) {
   if (req.method === "OPTIONS") {
@@ -85,7 +86,13 @@ async function handle(req: NextRequest) {
       dalleCallback,
     );
     var nodejsTools = await nodejsTool.getCustomTools();
-    var tools = [...nodejsTools];
+
+    // 初始化Post2WordPressTool
+    const post2WordPressTool = new Post2WordPressTool();
+
+    // 将Post2WordPressTool添加到工具列表中
+    var tools = [...nodejsTools, post2WordPressTool];
+
     return await agentApi.getApiHandler(req, reqBody, tools);
   } catch (e) {
     return new Response(JSON.stringify({ error: (e as any).message }), {
@@ -97,7 +104,6 @@ async function handle(req: NextRequest) {
 
 export const GET = handle;
 export const POST = handle;
-
 export const runtime = "nodejs";
 export const preferredRegion = [
   "arn1",

@@ -96,6 +96,17 @@ export const CN_PLUGINS: BuiltinPlugin[] = [
     onlyNodeRuntime: false,
   },
   {
+    name: "Post2WordPressTool",
+    toolName: "post2wordpress",
+    lang: "cn",
+    description:
+      "用于向WordPress网站发表文章的工具。它使用WordPress REST API创建新文章。",
+    builtin: true,
+    createdAt: 1703846656000, // 示例时间戳，请根据实际需要修改
+    enable: false,
+    onlyNodeRuntime: false,
+  },
+  {
     name: "bilibili视频信息获取",
     toolName: "bilibili_video_info",
     lang: "cn",
