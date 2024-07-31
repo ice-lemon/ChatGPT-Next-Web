@@ -70,11 +70,7 @@ export class ChatGPTApi implements LLMApi {
 
     let baseUrl = "";
 
-    // const isAzure = path.includes("deployments");
-    const isAzure = path.includes("nodejs");
-    //输出isAzure结果及path值
-    console.log("[Azure] ", isAzure);
-    console.log("[path] ", path);
+    const isAzure = path.includes("deployments");
     if (accessStore.useCustomConfig) {
       if (isAzure && !accessStore.isValidAzure()) {
         throw Error(
@@ -84,12 +80,10 @@ export class ChatGPTApi implements LLMApi {
 
       baseUrl = isAzure ? accessStore.azureUrl : accessStore.openaiUrl;
     }
-    
+
     if (baseUrl.length === 0) {
       const isApp = !!getClientConfig()?.isApp;
-      // const apiPath = isAzure ? ApiPath.Azure : ApiPath.OpenAI;
-      const apiPath = isAzure ? (process.env.AZURE_URL || "") : ApiPath.OpenAI;
-
+      const apiPath = isAzure ? ApiPath.Azure : ApiPath.OpenAI;
       baseUrl = isApp ? DEFAULT_API_HOST + "/proxy" + apiPath : apiPath;
     }
 
@@ -325,10 +319,6 @@ export class ChatGPTApi implements LLMApi {
               "[OpenAI] request response content type: ",
               contentType,
             );
-            console.log(
-              "[系统测试OpenAI] request response : ",
-              res,
-            );
 
             if (contentType?.startsWith("text/plain")) {
               responseText = await res.clone().text();
@@ -439,8 +429,6 @@ export class ChatGPTApi implements LLMApi {
         headers: getHeaders(),
       };
       const res = await fetch(path, chatPayload);
-      console.log("[Request]chatPayload: ", chatPayload);
-
       if (res.status !== 200) throw new Error(await res.text());
       const resJson = await res.json();
       return resJson.partial;
