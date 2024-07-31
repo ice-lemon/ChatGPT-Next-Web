@@ -88,7 +88,7 @@ export class ChatGPTApi implements LLMApi {
     if (baseUrl.length === 0) {
       const isApp = !!getClientConfig()?.isApp;
       // const apiPath = isAzure ? ApiPath.Azure : ApiPath.OpenAI;
-      const apiPath = isAzure ? process.env.AZURE_URL : ApiPath.OpenAI;
+      const apiPath = isAzure ? (process.env.AZURE_URL || "") : ApiPath.OpenAI;
 
       baseUrl = isApp ? DEFAULT_API_HOST + "/proxy" + apiPath : apiPath;
     }
