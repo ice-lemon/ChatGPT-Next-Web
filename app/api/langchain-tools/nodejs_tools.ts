@@ -67,7 +67,7 @@ export class NodeJSTool {
       "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.WP_AUTH_TOKEN}`,
     };
-    const maxOutputLength = 5000;
+    const maxOutputLength = 20000;
     const timeout = 30000;
 
     const post2wordpressTool = new Post2WordPressTool(

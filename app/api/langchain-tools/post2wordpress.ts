@@ -185,5 +185,5 @@ export class Post2WordPressTool extends Tool implements RequestTool {
   }
 
   description = `A tool to post articles to a WordPress site. It uses the WordPress REST API to create new posts.
-Input must be a JSON string with 'title' and 'content' properties.`;
+Input must be a JSON string with 'title' and 'content' properties. Such as {"title": "My Post Title", "content": "My Post Content"}，article will be posted to the WordPress site，，article language must be Chinese.`;
 }
