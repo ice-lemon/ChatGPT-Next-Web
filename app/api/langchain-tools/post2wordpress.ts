@@ -24,10 +24,10 @@ export class Post2WordPressTool extends Tool implements RequestTool {
   }
 
   /** @ignore */
-  async _call(input: string) {
-    console.log(`_call method started with input: ${input}`);
+  async _call(input: { title: string; content: string }) {
+    console.log(`_call method started with input: ${JSON.stringify(input)}`);
     try {
-      let result = await this.postToWordPress(input);
+      let result = await this.postToWordPress(input.title, input.content);
       console.log(`_call method completed with result: ${result}`);
       return result;
     } catch (error) {
@@ -36,8 +36,10 @@ export class Post2WordPressTool extends Tool implements RequestTool {
     }
   }
 
-  async postToWordPress(content: string): Promise<string> {
-    console.log(`postToWordPress method started with content: ${content}`);
+  async postToWordPress(title: string, content: string): Promise<string> {
+    console.log(
+      `postToWordPress method started with title: ${title}, content: ${content}`,
+    );
 
     const wpApiUrl = process.env.WP_API_URL;
     const wpApiPassword = process.env.WP_API_PASSWORD;
@@ -48,48 +50,25 @@ export class Post2WordPressTool extends Tool implements RequestTool {
     }
 
     const headers: HeadersInit = {
-      "Content-Type": "text/xml",
+      "Content-Type": "application/json",
+      Authorization: `Basic ${Buffer.from(`${wpUser}:${wpApiPassword}`).toString("base64")}`,
     };
 
-    const xmlData = `
-      <?xml version="1.0" encoding="UTF-8"?>
-      <methodCall>
-        <methodName>wp.newPost</methodName>
-        <params>
-          <param><value><string>${wpUser}</string></value></param>
-          <param><value><string>${wpApiPassword}</string></value></param>
-          <param><value><string>1</string></value></param>
-          <param>
-            <value>
-              <struct>
-                <member>
-                  <name>post_title</name>
-                  <value><string>GPT Summary</string></value>
-                </member>
-                <member>
-                  <name>post_content</name>
-                  <value><string>${content}</string></value>
-                </member>
-                <member>
-                  <name>post_status</name>
-                  <value><string>publish</string></value>
-                </member>
-              </struct>
-            </value>
-          </param>
-        </params>
-      </methodCall>
-    `;
+    const postData = {
+      title: title,
+      content: content,
+      status: "publish",
+    };
 
-    console.log(`XML data to be sent: ${xmlData}`);
+    console.log(`JSON data to be sent: ${JSON.stringify(postData)}`);
 
     try {
       const resp = await this.fetchWithTimeout(
-        wpApiUrl,
+        `${wpApiUrl}/wp-json/wp/v2/posts`,
         {
           method: "POST",
           headers: headers,
-          body: xmlData,
+          body: JSON.stringify(postData),
         },
         this.timeout,
       );
@@ -139,6 +118,6 @@ export class Post2WordPressTool extends Tool implements RequestTool {
     }
   }
 
-  description = `A tool to post articles to a WordPress site. It uses the WordPress XML-RPC API to create new posts.
-Input string must be the content to be posted.`;
+  description = `A tool to post articles to a WordPress site. It uses the WordPress REST API to create new posts.
+Input must be an object with 'title' and 'content' properties.`;
 }
