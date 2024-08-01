@@ -10,6 +10,7 @@ export interface RequestTool {
   maxOutputLength?: number;
   timeout: number;
 }
+
 export class Post2WordPressTool extends Tool implements RequestTool {
   name = "post2wordpress";
   maxOutputLength = Infinity;
@@ -87,7 +88,7 @@ export class Post2WordPressTool extends Tool implements RequestTool {
 
     try {
       const resp = await this.fetchWithTimeout(
-        wpApiUrl,
+        wpApiUrl as RequestInfo,
         {
           method: "POST",
           headers: headers,
@@ -113,7 +114,7 @@ export class Post2WordPressTool extends Tool implements RequestTool {
   }
 
   async fetchWithTimeout(
-    resource: RequestInfo | URL,
+    resource: RequestInfo,
     options = {},
     timeout: number = 30000,
   ) {
