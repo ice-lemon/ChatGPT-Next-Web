@@ -1,12 +1,8 @@
 import { Tool } from "@langchain/core/tools";
-import fetch from "node-fetch";
-
-export interface Headers {
-  [key: string]: string;
-}
+import fetch, { HeadersInit, RequestInit } from "node-fetch";
 
 export interface RequestTool {
-  headers: Headers;
+  headers: HeadersInit;
   maxOutputLength?: number;
   timeout: number;
 }
@@ -14,10 +10,10 @@ export interface RequestTool {
 export class Post2WordPressTool extends Tool implements RequestTool {
   name = "post2wordpress";
   maxOutputLength = Infinity;
-  timeout = 30000;
+  timeout = 10000;
 
   constructor(
-    public headers: Headers = {},
+    public headers: HeadersInit = {},
     { maxOutputLength }: { maxOutputLength?: number } = {},
     { timeout }: { timeout?: number } = {},
   ) {
@@ -51,8 +47,9 @@ export class Post2WordPressTool extends Tool implements RequestTool {
       return "FAIL: Missing required environment variables.";
     }
 
-    const headers = new Headers();
-    headers.append("Content-Type", "text/xml");
+    const headers: HeadersInit = {
+      "Content-Type": "text/xml",
+    };
 
     const xmlData = `
       <?xml version="1.0" encoding="UTF-8"?>
@@ -88,7 +85,7 @@ export class Post2WordPressTool extends Tool implements RequestTool {
 
     try {
       const resp = await this.fetchWithTimeout(
-        wpApiUrl as RequestInfo,
+        wpApiUrl,
         {
           method: "POST",
           headers: headers,
@@ -114,8 +111,8 @@ export class Post2WordPressTool extends Tool implements RequestTool {
   }
 
   async fetchWithTimeout(
-    resource: RequestInfo,
-    options = {},
+    resource: string,
+    options: RequestInit,
     timeout: number = 30000,
   ) {
     console.log(`fetchWithTimeout method started with resource: ${resource}`);
