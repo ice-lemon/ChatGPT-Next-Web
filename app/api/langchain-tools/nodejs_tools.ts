@@ -13,7 +13,7 @@ import { BilibiliMusicRecognitionTool } from "./bilibili_music_recognition";
 import { MyFilesBrowser } from "./myfiles_browser";
 import { BilibiliVideoConclusionTool } from "./bilibili_vid_conclusion";
 import { WeatherInfoTool } from "./weatherinfotool";
-
+import { Post2WordPressTool } from "./post2wordpress";
 export class NodeJSTool {
   private apiKey: string | undefined;
   private baseUrl: string;
@@ -58,6 +58,7 @@ export class NodeJSTool {
     const pdfBrowserTool = new PDFBrowser(this.model, this.embeddings);
     const bilibiliVideoInfoTool = new BilibiliVideoInfoTool();
     const weatherinfotool = new WeatherInfoTool();
+    const post2wordpressTool = new Post2WordPressTool();
     const bilibiliVideoSearchTool = new BilibiliVideoSearchTool();
     const bilibiliVideoConclusionTool = new BilibiliVideoConclusionTool();
     const bilibiliMusicRecognitionTool = new BilibiliMusicRecognitionTool();
@@ -74,6 +75,7 @@ export class NodeJSTool {
       bilibiliMusicRecognitionTool,
       bilibiliVideoConclusionTool,
       weatherinfotool,
+      post2wordpressTool,
     ];
     if (!!process.env.ENABLE_RAG) {
       tools.push(

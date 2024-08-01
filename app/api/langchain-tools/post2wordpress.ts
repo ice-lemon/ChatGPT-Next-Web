@@ -117,10 +117,3 @@ export class Post2WordPressTool {
     }
   }
 }
-
-// Example usage
-const tool = new Post2WordPressTool();
-tool
-  .call({ title: "这是文章标题", content: "这是文章内容" })
-  .then((response) => console.log(response))
-  .catch((error) => console.error(error));
