@@ -1,8 +1,8 @@
 import { Tool } from "@langchain/core/tools";
-import fetch, { HeadersInit, RequestInit } from "node-fetch";
+import axios, { AxiosRequestConfig } from "axios";
 
 export interface RequestTool {
-  headers: HeadersInit;
+  headers: Record<string, string>;
   maxOutputLength?: number;
   timeout: number;
 }
@@ -10,10 +10,10 @@ export interface RequestTool {
 export class Post2WordPressTool extends Tool implements RequestTool {
   name = "post2wordpress";
   maxOutputLength = Infinity;
-  timeout = 30000;
+  timeout = 10000;
 
   constructor(
-    public headers: HeadersInit = {},
+    public headers: Record<string, string> = {},
     { maxOutputLength }: { maxOutputLength?: number } = {},
     { timeout }: { timeout?: number } = {},
   ) {
@@ -44,19 +44,14 @@ export class Post2WordPressTool extends Tool implements RequestTool {
     const wpApiUrl = process.env.WP_API_URL;
     const wpApiPassword = process.env.WP_API_PASSWORD;
     const wpUser = process.env.WP_USER;
-    console.log(`WP_API_URL: ${process.env.WP_API_URL}`);
-    console.log(`WP_USER: ${process.env.WP_USER}`);
-    console.log(`WP_USER: ${process.env.WP_API_PASSWORD}`);
 
     if (!wpApiUrl || !wpApiPassword || !wpUser) {
       return "FAIL: Missing required environment variables.";
     }
 
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      Authorization: `Basic ${Buffer.from(`${wpUser}:${wpApiPassword}`).toString("base64")}`,
     };
-    console.log(`Request headers: ${JSON.stringify(headers)}`);
 
     const postData = {
       title: title,
@@ -65,60 +60,36 @@ export class Post2WordPressTool extends Tool implements RequestTool {
     };
 
     console.log(`JSON data to be sent: ${JSON.stringify(postData)}`);
+    console.log(`Request headers: ${JSON.stringify(headers)}`);
+
+    const config: AxiosRequestConfig = {
+      method: "post",
+      url: wpApiUrl,
+      headers: headers,
+      data: postData,
+      auth: {
+        username: wpUser,
+        password: wpApiPassword,
+      },
+      timeout: this.timeout,
+    };
 
     try {
-      const resp = await this.fetchWithTimeout(
-        `${wpApiUrl}`,
-        {
-          method: "POST",
-          headers: headers,
-          body: JSON.stringify(postData),
-        },
-        this.timeout,
-      );
+      const resp = await axios(config);
 
       console.log(`HTTP response received: ${resp.status}`);
 
-      if (!resp.ok) {
-        return `FAIL: Unable to post to WordPress. HTTP status: ${resp.status}`;
+      if (resp.status !== 201) {
+        // 201 Created is the expected status for a successful post creation
+        console.error(`Error response data: ${resp.data}`);
+        return `FAIL: Unable to post to WordPress. HTTP status: ${resp.status}, Error: ${resp.data}`;
       }
 
-      const responseText = await resp.text();
-      console.log(`Response text received: ${responseText}`);
-
-      return `SUCCESS: Post created with response: ${responseText}`;
+      console.log(`Response data received: ${JSON.stringify(resp.data)}`);
+      return `SUCCESS: Post created with response: ${JSON.stringify(resp.data)}`;
     } catch (error) {
       console.error(`postToWordPress method encountered an error: ${error}`);
       return `FAIL: ${error}`;
-    }
-  }
-
-  async fetchWithTimeout(
-    resource: string,
-    options: RequestInit,
-    timeout: number = 30000,
-  ) {
-    console.log(`fetchWithTimeout method started with resource: ${resource}`);
-    const controller = new AbortController();
-    const id = setTimeout(() => {
-      console.log(`Request timed out after ${timeout}ms`);
-      controller.abort();
-    }, timeout);
-
-    try {
-      const response = await fetch(resource, {
-        ...options,
-        signal: controller.signal,
-      });
-      clearTimeout(id);
-      console.log(
-        `fetchWithTimeout method completed with status: ${response.status}`,
-      );
-      return response;
-    } catch (error) {
-      clearTimeout(id);
-      console.error(`fetchWithTimeout method encountered an error: ${error}`);
-      throw error;
     }
   }
 
