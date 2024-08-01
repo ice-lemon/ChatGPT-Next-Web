@@ -33,8 +33,14 @@ export class Post2WordPressTool extends Tool implements RequestTool {
   /** @ignore */
   async _call(input: { title: string; content: string }) {
     console.log(`_call method started with input: ${JSON.stringify(input)}`);
+    const { title, content } = input;
+    if (!title || !content) {
+      console.error("Title or content is missing in the input.");
+      return "FAIL: Title or content is missing.";
+    }
+
     try {
-      let result = await this.postToWordPress(input.title, input.content);
+      let result = await this.postToWordPress(title, content);
       console.log(`_call method completed with result: ${result}`);
       return result;
     } catch (error) {
