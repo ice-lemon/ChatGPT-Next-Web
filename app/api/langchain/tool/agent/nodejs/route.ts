@@ -27,7 +27,7 @@ async function handle(req: NextRequest) {
     console.log("Start handling request...");
 
     const reqBody: RequestBody = await req.json();
-    console.log("Request body parsed.");
+    console.log("Request body parsed:", reqBody);
 
     const authToken = req.headers.get("Authorization") ?? "";
     const token = authToken.trim().replaceAll("Bearer ", "").trim();
@@ -37,6 +37,7 @@ async function handle(req: NextRequest) {
     console.log("OpenAI API key retrieved.");
 
     const baseUrl = await agentApi.getOpenAIBaseUrl(reqBody.baseUrl);
+    console.log("OpenAI base URL:", baseUrl);
 
     const model = new OpenAI(
       {
@@ -91,9 +92,14 @@ async function handle(req: NextRequest) {
       dalleCallback,
     );
     var nodejsTools = await nodejsTool.getCustomTools();
+    console.log("Custom tools retrieved:", nodejsTools);
+
     var tools = [...nodejsTools];
+    console.log("Tools to be used:", tools);
+
     return await agentApi.getApiHandler(req, reqBody, tools);
   } catch (e) {
+    console.error("Error occurred:", e);
     return new Response(JSON.stringify({ error: (e as any).message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

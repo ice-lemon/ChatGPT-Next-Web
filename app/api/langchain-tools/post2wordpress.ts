@@ -49,7 +49,6 @@ export class Post2WordPressTool extends Tool implements RequestTool {
     );
 
     const wpApiUrl = process.env.WP_POST_API_URL;
-    const wpAuthApiUrl = process.env.WP_AUTH_API_URL;
 
     const wpApiPassword = process.env.WP_PASSWORD;
     const wpUser = process.env.WP_USER;
@@ -112,7 +111,9 @@ export class Post2WordPressTool extends Tool implements RequestTool {
     password: string,
   ): Promise<string | null> {
     try {
-      const response = await fetch(`${process.env.WP_AUTH_API_URL}`, {
+      const wpAuthApiUrl = process.env.WP_AUTH_API_URL;
+
+      const response = await fetch(`${wpAuthApiUrl}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
