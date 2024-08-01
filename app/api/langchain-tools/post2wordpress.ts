@@ -80,6 +80,8 @@ export class Post2WordPressTool extends Tool implements RequestTool {
     }
 
     const token = await this.getJWTToken(wpUser, wpApiPassword);
+    console.log(`WP_token: ${token}`);
+
     if (!token) {
       return "FAIL: Unable to retrieve JWT token.";
     }
