@@ -31,9 +31,18 @@ export class Post2WordPressTool extends Tool implements RequestTool {
   }
 
   /** @ignore */
-  async _call(input: { title: string; content: string }) {
-    console.log(`_call method started with input: ${JSON.stringify(input)}`);
-    const { title, content } = input;
+  async _call(input: string) {
+    console.log(`_call method started with input: ${input}`);
+
+    let parsedInput: { title: string; content: string };
+    try {
+      parsedInput = JSON.parse(input);
+    } catch (error) {
+      console.error("Failed to parse input as JSON.", error);
+      return "FAIL: Input is not valid JSON.";
+    }
+
+    const { title, content } = parsedInput;
     if (!title || !content) {
       console.error("Title or content is missing in the input.");
       return "FAIL: Title or content is missing.";
@@ -172,5 +181,5 @@ export class Post2WordPressTool extends Tool implements RequestTool {
   }
 
   description = `A tool to post articles to a WordPress site. It uses the WordPress REST API to create new posts.
-Input must be an object with 'title' and 'content' properties.`;
+Input must be a JSON string with 'title' and 'content' properties.`;
 }
