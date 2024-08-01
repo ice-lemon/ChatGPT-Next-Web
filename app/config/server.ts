@@ -28,6 +28,12 @@ declare global {
       AZURE_API_KEY?: string;
       AZURE_API_VERSION?: string;
 
+      //wordpress api
+      WP_AUTH_API_URL?: string;
+      WP_POST_API_URL?: string;
+      WP_PASSWORD?: string;
+      WP_USER?: string;
+
       // google only
       GOOGLE_API_KEY?: string;
       GOOGLE_URL?: string;

@@ -51,11 +51,11 @@ export class Post2WordPressTool extends Tool implements RequestTool {
     const wpApiUrl = process.env.WP_POST_API_URL;
     const wpAuthApiUrl = process.env.WP_AUTH_API_URL;
 
-    const wpApiPassword = process.env.WP_API_PASSWORD;
+    const wpApiPassword = process.env.WP_PASSWORD;
     const wpUser = process.env.WP_USER;
     console.log(`WP_API_URL: ${process.env.WP_POST_API_URL}`);
     console.log(`WP_USER: ${process.env.WP_USER}`);
-    console.log(`WP_USER: ${process.env.WP_API_PASSWORD}`);
+    console.log(`WP_USER: ${process.env.WP_PASSWORD}`);
 
     if (!wpApiUrl || !wpApiPassword || !wpUser) {
       return "FAIL: Missing required environment variables.";
