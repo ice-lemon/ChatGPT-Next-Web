@@ -10,7 +10,7 @@ export interface RequestTool {
 export class Post2WordPressTool extends Tool implements RequestTool {
   name = "post2wordpress";
   maxOutputLength = Infinity;
-  timeout = 10000;
+  timeout = 30000;
 
   constructor(
     public headers: HeadersInit = {},
@@ -44,6 +44,9 @@ export class Post2WordPressTool extends Tool implements RequestTool {
     const wpApiUrl = process.env.WP_API_URL;
     const wpApiPassword = process.env.WP_API_PASSWORD;
     const wpUser = process.env.WP_USER;
+    console.log(`WP_API_URL: ${process.env.WP_API_URL}`);
+    console.log(`WP_USER: ${process.env.WP_USER}`);
+    console.log(`WP_USER: ${process.env.WP_API_PASSWORD}`);
 
     if (!wpApiUrl || !wpApiPassword || !wpUser) {
       return "FAIL: Missing required environment variables.";
@@ -53,6 +56,7 @@ export class Post2WordPressTool extends Tool implements RequestTool {
       "Content-Type": "application/json",
       Authorization: `Basic ${Buffer.from(`${wpUser}:${wpApiPassword}`).toString("base64")}`,
     };
+    console.log(`Request headers: ${JSON.stringify(headers)}`);
 
     const postData = {
       title: title,
@@ -64,7 +68,7 @@ export class Post2WordPressTool extends Tool implements RequestTool {
 
     try {
       const resp = await this.fetchWithTimeout(
-        `${wpApiUrl}/wp-json/wp/v2/posts`,
+        `${wpApiUrl}`,
         {
           method: "POST",
           headers: headers,
