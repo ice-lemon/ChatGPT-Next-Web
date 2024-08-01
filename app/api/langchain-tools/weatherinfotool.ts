@@ -14,7 +14,7 @@ export interface RequestTool {
 export class WeatherInfoTool extends Tool implements RequestTool {
   name = "weather_info";
   maxOutputLength = Infinity;
-  timeout = 10000;
+  timeout = 30000; // 增加超时时间到 30 秒
 
   constructor(
     public headers: Headers = {},
