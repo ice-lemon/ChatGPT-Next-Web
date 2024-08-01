@@ -6,7 +6,6 @@ import { ModelProvider } from "@/app/constant";
 import { OpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { Embeddings } from "langchain/dist/embeddings/base";
 import { OllamaEmbeddings } from "@langchain/community/embeddings/ollama";
-import { Post2WordPressTool } from "@/app/api/langchain-tools/post2wordpress"; // 导入Post2WordPressTool
 
 async function handle(req: NextRequest) {
   if (req.method === "OPTIONS") {
@@ -25,12 +24,18 @@ async function handle(req: NextRequest) {
     const writer = transformStream.writable.getWriter();
     const controller = new AbortController();
     const agentApi = new AgentApi(encoder, transformStream, writer, controller);
+    console.log("Start handling request...");
 
     const reqBody: RequestBody = await req.json();
+    console.log("Request body parsed.");
+
     const authToken = req.headers.get("Authorization") ?? "";
     const token = authToken.trim().replaceAll("Bearer ", "").trim();
+    console.log("Authorization token processed.");
 
     const apiKey = await agentApi.getOpenAIApiKey(token);
+    console.log("OpenAI API key retrieved.");
+
     const baseUrl = await agentApi.getOpenAIBaseUrl(reqBody.baseUrl);
 
     const model = new OpenAI(
@@ -86,13 +91,7 @@ async function handle(req: NextRequest) {
       dalleCallback,
     );
     var nodejsTools = await nodejsTool.getCustomTools();
-
-    // 初始化Post2WordPressTool
-    const post2WordPressTool = new Post2WordPressTool();
-
-    // 将Post2WordPressTool添加到工具列表中
-    var tools = [...nodejsTools, post2WordPressTool];
-
+    var tools = [...nodejsTools];
     return await agentApi.getApiHandler(req, reqBody, tools);
   } catch (e) {
     return new Response(JSON.stringify({ error: (e as any).message }), {
@@ -104,6 +103,7 @@ async function handle(req: NextRequest) {
 
 export const GET = handle;
 export const POST = handle;
+
 export const runtime = "nodejs";
 export const preferredRegion = [
   "arn1",

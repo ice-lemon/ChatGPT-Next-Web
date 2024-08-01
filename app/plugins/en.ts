@@ -109,4 +109,15 @@ export const EN_PLUGINS: BuiltinPlugin[] = [
     enable: false,
     onlyNodeRuntime: false,
   },
+  {
+    name: "Weather Information Fetcher",
+    toolName: "weather_info",
+    lang: "en",
+    description:
+      "Fetches weather information using city codes, including city name, update time, temperature, humidity, air quality, and forecast.",
+    builtin: true,
+    createdAt: 1712394126000,
+    enable: false,
+    onlyNodeRuntime: false,
+  },
 ];

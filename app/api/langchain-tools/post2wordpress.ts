@@ -85,6 +85,8 @@ export class Post2WordPressTool {
     `;
 
     try {
+      console.log("Starting Post2WordPressTool call...");
+
       const response = await axios.post(this.apiUrl.href, xml, {
         headers: {
           "Content-Type": "text/xml",

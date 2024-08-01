@@ -12,6 +12,7 @@ import { BilibiliVideoSearchTool } from "./bilibili_vid_search";
 import { BilibiliMusicRecognitionTool } from "./bilibili_music_recognition";
 import { MyFilesBrowser } from "./myfiles_browser";
 import { BilibiliVideoConclusionTool } from "./bilibili_vid_conclusion";
+import { WeatherInfoTool } from "./weatherinfotool";
 
 export class NodeJSTool {
   private apiKey: string | undefined;
@@ -56,6 +57,7 @@ export class NodeJSTool {
     const wolframAlphaTool = new WolframAlphaTool();
     const pdfBrowserTool = new PDFBrowser(this.model, this.embeddings);
     const bilibiliVideoInfoTool = new BilibiliVideoInfoTool();
+    const weatherinfotool = new WeatherInfoTool();
     const bilibiliVideoSearchTool = new BilibiliVideoSearchTool();
     const bilibiliVideoConclusionTool = new BilibiliVideoConclusionTool();
     const bilibiliMusicRecognitionTool = new BilibiliMusicRecognitionTool();
@@ -71,6 +73,7 @@ export class NodeJSTool {
       bilibiliVideoSearchTool,
       bilibiliMusicRecognitionTool,
       bilibiliVideoConclusionTool,
+      weatherinfotool,
     ];
     if (!!process.env.ENABLE_RAG) {
       tools.push(

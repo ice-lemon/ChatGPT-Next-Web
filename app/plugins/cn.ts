@@ -117,6 +117,17 @@ export const CN_PLUGINS: BuiltinPlugin[] = [
     onlyNodeRuntime: false,
   },
   {
+    name: "天气信息获取",
+    toolName: "weather_info",
+    lang: "cn",
+    description:
+      "通过城市代码获取天气信息，包括城市名称、更新时间、温度、湿度、空气质量和预报。",
+    builtin: true,
+    createdAt: 1712394126000,
+    enable: false,
+    onlyNodeRuntime: false,
+  },
+  {
     name: "bilibili视频搜索",
     toolName: "bilibili_video_search",
     lang: "cn",
