@@ -1,81 +1,80 @@
-import axios from "axios";
-import { URL } from "url";
+import { Tool } from "@langchain/core/tools";
+import fetch from "node-fetch";
 
-export class Post2WordPressTool {
-  name: string;
-  description: string;
-  apiUrl: URL;
+export interface Headers {
+  [key: string]: string;
+}
 
-  constructor() {
-    this.name = "post2wordpress";
-    this.description = `A tool to post articles to a WordPress site. It uses the WordPress XML-RPC API to create new posts.`;
+export interface RequestTool {
+  headers: Headers;
+  maxOutputLength?: number;
+  timeout: number;
+}
+export class Post2WordPressTool extends Tool implements RequestTool {
+  name = "post2wordpress";
+  maxOutputLength = Infinity;
+  timeout = 30000;
 
-    const apiUrl = process.env.WP_API_URL;
-    if (!apiUrl) {
-      throw new Error("`WP_API_URL` not configured");
-    }
+  constructor(
+    public headers: Headers = {},
+    { maxOutputLength }: { maxOutputLength?: number } = {},
+    { timeout }: { timeout?: number } = {},
+  ) {
+    super(...arguments);
 
-    this.apiUrl = new URL(apiUrl);
+    this.maxOutputLength = maxOutputLength ?? this.maxOutputLength;
+    this.timeout = timeout ?? this.timeout;
   }
 
-  async call(input: { title: string; content: string; status?: string }) {
-    const { title, content, status = "publish" } = input;
-    const user = process.env.WP_USER;
-    const password = process.env.WP_API_PASSWORD;
+  /** @ignore */
+  async _call(input: string) {
+    console.log(`_call method started with input: ${input}`);
+    try {
+      let result = await this.postToWordPress(input);
+      console.log(`_call method completed with result: ${result}`);
+      return result;
+    } catch (error) {
+      console.error(`_call method encountered an error: ${error}`);
+      return (error as Error).toString();
+    }
+  }
 
-    if (!user || !password) {
-      return "`WP_USER` or `WP_API_PASSWORD` not configured";
+  async postToWordPress(content: string): Promise<string> {
+    console.log(`postToWordPress method started with content: ${content}`);
+
+    const wpApiUrl = process.env.WP_API_URL;
+    const wpApiPassword = process.env.WP_API_PASSWORD;
+    const wpUser = process.env.WP_USER;
+
+    if (!wpApiUrl || !wpApiPassword || !wpUser) {
+      return "FAIL: Missing required environment variables.";
     }
 
-    const post = {
-      title: title,
-      description: content,
-      post_status: status,
-      categories: ["Uncategorized"], // 默认分类，可以根据需要修改
-      mt_keywords: ["tag1", "tag2"], // 默认标签，可以根据需要修改
-    };
+    const headers = new Headers();
+    headers.append("Content-Type", "text/xml");
 
-    const xml = `
+    const xmlData = `
+      <?xml version="1.0" encoding="UTF-8"?>
       <methodCall>
         <methodName>wp.newPost</methodName>
         <params>
-          <param><value><int>1</int></value></param>
-          <param><value><string>${user}</string></value></param>
-          <param><value><string>${password}</string></value></param>
+          <param><value><string>${wpUser}</string></value></param>
+          <param><value><string>${wpApiPassword}</string></value></param>
+          <param><value><string>1</string></value></param>
           <param>
             <value>
               <struct>
                 <member>
-                  <name>title</name>
-                  <value><string>${post.title}</string></value>
+                  <name>post_title</name>
+                  <value><string>GPT Summary</string></value>
                 </member>
                 <member>
-                  <name>description</name>
-                  <value><string>${post.description}</string></value>
+                  <name>post_content</name>
+                  <value><string>${content}</string></value>
                 </member>
                 <member>
                   <name>post_status</name>
-                  <value><string>${post.post_status}</string></value>
-                </member>
-                <member>
-                  <name>categories</name>
-                  <value>
-                    <array>
-                      <data>
-                        ${post.categories.map((cat) => `<value><string>${cat}</string></value>`).join("")}
-                      </data>
-                    </array>
-                  </value>
-                </member>
-                <member>
-                  <name>mt_keywords</name>
-                  <value>
-                    <array>
-                      <data>
-                        ${post.mt_keywords.map((tag) => `<value><string>${tag}</string></value>`).join("")}
-                      </data>
-                    </array>
-                  </value>
+                  <value><string>publish</string></value>
                 </member>
               </struct>
             </value>
@@ -84,36 +83,64 @@ export class Post2WordPressTool {
       </methodCall>
     `;
 
+    console.log(`XML data to be sent: ${xmlData}`);
+
     try {
-      console.log("[Post2WordPressTool] Sending request to:", this.apiUrl.href);
-      console.log("[Post2WordPressTool] Request payload:", xml);
-
-      const response = await axios.post(this.apiUrl.href, xml, {
-        headers: {
-          "Content-Type": "text/xml",
+      const resp = await this.fetchWithTimeout(
+        wpApiUrl,
+        {
+          method: "POST",
+          headers: headers,
+          body: xmlData,
         },
-      });
+        this.timeout,
+      );
 
-      console.log("[Post2WordPressTool] 文章发表成功，响应：", response.data);
-      return { response: response.data };
-    } catch (error) {
-      console.error("[Post2WordPressTool] 请求错误：", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Axios error message:", error.message);
-        if (error.response) {
-          console.error("Response data:", error.response.data);
-          console.error("Response status:", error.response.status);
-          console.error("Response headers:", error.response.headers);
-        } else if (error.request) {
-          console.error(
-            "Request made but no response received:",
-            error.request,
-          );
-        }
-      } else {
-        console.error("Non-Axios error:", error);
+      console.log(`HTTP response received: ${resp.status}`);
+
+      if (!resp.ok) {
+        return `FAIL: Unable to post to WordPress. HTTP status: ${resp.status}`;
       }
-      throw new Error("post error");
+
+      const responseText = await resp.text();
+      console.log(`Response text received: ${responseText}`);
+
+      return `SUCCESS: Post created with response: ${responseText}`;
+    } catch (error) {
+      console.error(`postToWordPress method encountered an error: ${error}`);
+      return `FAIL: ${error}`;
     }
   }
+
+  async fetchWithTimeout(
+    resource: RequestInfo | URL,
+    options = {},
+    timeout: number = 30000,
+  ) {
+    console.log(`fetchWithTimeout method started with resource: ${resource}`);
+    const controller = new AbortController();
+    const id = setTimeout(() => {
+      console.log(`Request timed out after ${timeout}ms`);
+      controller.abort();
+    }, timeout);
+
+    try {
+      const response = await fetch(resource, {
+        ...options,
+        signal: controller.signal,
+      });
+      clearTimeout(id);
+      console.log(
+        `fetchWithTimeout method completed with status: ${response.status}`,
+      );
+      return response;
+    } catch (error) {
+      clearTimeout(id);
+      console.error(`fetchWithTimeout method encountered an error: ${error}`);
+      throw error;
+    }
+  }
+
+  description = `A tool to post articles to a WordPress site. It uses the WordPress XML-RPC API to create new posts.
+Input string must be the content to be posted.`;
 }
