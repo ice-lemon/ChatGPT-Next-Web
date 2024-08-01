@@ -1,3 +1,5 @@
+// app\api\langchain-tools\nodejs_tools.ts
+
 import { BaseLanguageModel } from "langchain/dist/base_language";
 import { PDFBrowser } from "@/app/api/langchain-tools/pdf_browser";
 import { Embeddings } from "langchain/dist/embeddings/base.js";
@@ -14,6 +16,7 @@ import { MyFilesBrowser } from "./myfiles_browser";
 import { BilibiliVideoConclusionTool } from "./bilibili_vid_conclusion";
 import { WeatherInfoTool } from "./weatherinfotool";
 import { Post2WordPressTool } from "./post2wordpress";
+
 export class NodeJSTool {
   private apiKey: string | undefined;
   private baseUrl: string;
@@ -58,7 +61,20 @@ export class NodeJSTool {
     const pdfBrowserTool = new PDFBrowser(this.model, this.embeddings);
     const bilibiliVideoInfoTool = new BilibiliVideoInfoTool();
     const weatherinfotool = new WeatherInfoTool();
-    const post2wordpressTool = new Post2WordPressTool();
+
+    // 获取 WordPress 相关的环境变量
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.WP_AUTH_TOKEN}`,
+    };
+    const maxOutputLength = 5000;
+    const timeout = 30000;
+
+    const post2wordpressTool = new Post2WordPressTool(
+      headers,
+      { maxOutputLength },
+      { timeout },
+    );
     const bilibiliVideoSearchTool = new BilibiliVideoSearchTool();
     const bilibiliVideoConclusionTool = new BilibiliVideoConclusionTool();
     const bilibiliMusicRecognitionTool = new BilibiliMusicRecognitionTool();
