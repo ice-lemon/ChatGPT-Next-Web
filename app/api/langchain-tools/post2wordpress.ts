@@ -134,6 +134,7 @@ export class Post2WordPressTool extends Tool implements RequestTool {
   }
 
   description = `A tool to publish articles to WordPress sites. It uses the WordPress REST API to create new articles.
-The input must be a JSON string with 'title' and 'content' properties. The article will be published to the WordPress site, the article content must be in HTML format instead of Markdown format,
- because the wordpress website does not support Markdown tags, and the article language must be Chinese. For example {"title":"这是标题","content":"<p>这是文章内容</p>"}, `;
+The input must be a JSON string with 'title' and 'content' properties. For example {"title": "My article title", "content": "My article content"}, 
+the article will be published to the WordPress site, the article content must be in HTML format instead of Markdown format,
+ because the wordpress website does not support Markdown tags, and the article language must be Chinese. `;
 }
