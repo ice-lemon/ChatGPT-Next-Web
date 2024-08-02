@@ -96,7 +96,7 @@ export const CN_PLUGINS: BuiltinPlugin[] = [
     onlyNodeRuntime: false,
   },
   {
-    name: "Post2WordPressTool",
+    name: "WordPress文章发布工具",
     toolName: "post2wordpress",
     lang: "cn",
     description:
