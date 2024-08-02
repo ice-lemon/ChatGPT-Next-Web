@@ -9,6 +9,8 @@ import { OpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { Embeddings } from "langchain/dist/embeddings/base";
 import { OllamaEmbeddings } from "@langchain/community/embeddings/ollama";
 import { Post2WordPressTool } from "@/app/api/langchain-tools/post2wordpress"; // Import the new tool
+export const maxDuration = 60; // This function can run for a maximum of 5 seconds
+export const dynamic = "force-dynamic";
 
 async function handle(req: NextRequest) {
   if (req.method === "OPTIONS") {
