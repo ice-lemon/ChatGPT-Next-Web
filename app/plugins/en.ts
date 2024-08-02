@@ -105,8 +105,8 @@ export const EN_PLUGINS: BuiltinPlugin[] = [
     description:
       "A tool to post articles to a WordPress site. It uses the WordPress REST API to create new posts.",
     builtin: true,
-    createdAt: 1703846656000, // Example timestamp, please modify as needed
-    enable: false,
+    createdAt: 1703846656000,
+    enable: true,
     onlyNodeRuntime: false,
   },
   {

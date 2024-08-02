@@ -8,6 +8,7 @@ import { ModelProvider } from "@/app/constant";
 import { OpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { Embeddings } from "langchain/dist/embeddings/base";
 import { OllamaEmbeddings } from "@langchain/community/embeddings/ollama";
+import { Post2WordPressTool } from "@/app/api/langchain-tools/post2wordpress"; // Import the new tool
 
 async function handle(req: NextRequest) {
   if (req.method === "OPTIONS") {
@@ -96,7 +97,10 @@ async function handle(req: NextRequest) {
     var nodejsTools = await nodejsTool.getCustomTools();
     console.log("Custom tools retrieved:", nodejsTools);
 
-    var tools = [...nodejsTools];
+    // Instantiate the new Post2WordPressTool
+    var post2WordPressTool = new Post2WordPressTool();
+
+    var tools = [...nodejsTools, post2WordPressTool]; // Add the new tool to the tools array
     console.log("Tools to be used:", tools);
 
     return await agentApi.getApiHandler(req, reqBody, tools);

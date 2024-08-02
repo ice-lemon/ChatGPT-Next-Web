@@ -16,13 +16,12 @@ export class Post2WordPressTool extends Tool implements RequestTool {
 
   constructor(
     public headers: HeadersInit = {},
-    { maxOutputLength }: { maxOutputLength?: number } = {},
-    { timeout }: { timeout?: number } = {},
+    options: { maxOutputLength?: number; timeout?: number } = {},
   ) {
-    super(...arguments);
+    super();
 
-    this.maxOutputLength = maxOutputLength ?? this.maxOutputLength;
-    this.timeout = timeout ?? this.timeout;
+    this.maxOutputLength = options.maxOutputLength ?? this.maxOutputLength;
+    this.timeout = options.timeout ?? this.timeout;
   }
 
   /** @ignore */
@@ -35,28 +34,28 @@ export class Post2WordPressTool extends Tool implements RequestTool {
         parsedInput = JSON.parse(input);
       } catch (error) {
         console.error("Failed to parse input as JSON.", error);
-        return "FAIL: 输入格式不正确，请使用JSON格式。"; // 使用中文备注
+        return "FAIL: 输入格式不正确，请使用JSON格式。";
       }
     } else {
       parsedInput = input;
     }
 
-    // 只接受一个参数，默认作为content，title使用默认值
     const { content = "", title = "默认标题" } = parsedInput;
     if (!content) {
       console.error("文章内容不能为空。");
-      return "FAIL: 文章内容不能为空。"; // 使用中文备注
+      return "FAIL: 文章内容不能为空。";
     }
 
     try {
-      let result = await this.postToWordPress(title, content);
+      const result = await this.postToWordPress(title, content);
       console.log(`_call method completed with result: ${result}`);
       return result;
     } catch (error) {
       console.error(`_call method encountered an error: ${error}`);
-      return (error as Error).toString();
+      return `FAIL: ${error}`;
     }
   }
+
   async postToWordPress(title: string, content: string): Promise<string> {
     console.log(
       `postToWordPress method started with title: ${title}, content: ${content}`,
@@ -66,21 +65,16 @@ export class Post2WordPressTool extends Tool implements RequestTool {
     const wpUser = process.env.WP_USER;
     const wpPassword = process.env.WP_PASSWORD;
 
-    console.log(`WP_API_URL: ${wpApiUrl}`);
-    console.log(`WP_USER: ${wpUser}`);
-
     if (!wpApiUrl || !wpUser || !wpPassword) {
-      return "FAIL: Missing required environment variables.";
+      console.error("Missing required environment variables.");
+      return "FAIL: 缺少必要的环境变量。";
     }
 
     const authToken = Buffer.from(`${wpUser}:${wpPassword}`).toString("base64");
-    console.log(`Base64 auth token: ${authToken}`); // This line should be removed in production
-
     const headers: HeadersInit = {
       "Content-Type": "application/json",
       Authorization: `Basic ${authToken}`,
     };
-    console.log(`Request headers: ${JSON.stringify(headers)}`);
 
     const postData = {
       title: title,
@@ -88,11 +82,9 @@ export class Post2WordPressTool extends Tool implements RequestTool {
       status: "publish",
     };
 
-    console.log(`JSON data to be sent: ${JSON.stringify(postData)}`);
-
     try {
       const resp = await this.fetchWithTimeout(
-        `${wpApiUrl}`,
+        wpApiUrl,
         {
           method: "POST",
           headers: headers,
@@ -101,16 +93,15 @@ export class Post2WordPressTool extends Tool implements RequestTool {
         this.timeout,
       );
 
-      console.log(`HTTP response received: ${resp.status}`);
-
       if (!resp.ok) {
-        return `FAIL: Unable to post to WordPress. HTTP status: ${resp.status}`;
+        console.error(
+          `Unable to post to WordPress. HTTP status: ${resp.status}`,
+        );
+        return `FAIL: 无法发布到 WordPress。HTTP 状态: ${resp.status}`;
       }
 
       const responseText = await resp.text();
-      console.log(`Response text received: ${responseText}`);
-
-      return `SUCCESS: Post created with response: ${responseText}`;
+      return `SUCCESS: 发布成功，响应: ${responseText}`;
     } catch (error) {
       console.error(`postToWordPress method encountered an error: ${error}`);
       return `FAIL: ${error}`;
@@ -122,12 +113,8 @@ export class Post2WordPressTool extends Tool implements RequestTool {
     options: RequestInit,
     timeout: number = 30000,
   ) {
-    console.log(`fetchWithTimeout method started with resource: ${resource}`);
     const controller = new AbortController();
-    const id = setTimeout(() => {
-      console.log(`Request timed out after ${timeout}ms`);
-      controller.abort();
-    }, timeout);
+    const id = setTimeout(() => controller.abort(), timeout);
 
     try {
       const response = await fetch(resource, {
@@ -135,13 +122,10 @@ export class Post2WordPressTool extends Tool implements RequestTool {
         signal: controller.signal,
       });
       clearTimeout(id);
-      console.log(
-        `fetchWithTimeout method completed with status: ${response.status}`,
-      );
       return response;
     } catch (error) {
       clearTimeout(id);
-      console.error(`fetchWithTimeout method encountered an error: ${error}`);
+      console.error(`fetchWithTimeout encountered an error: ${error}`);
       throw error;
     }
   }
