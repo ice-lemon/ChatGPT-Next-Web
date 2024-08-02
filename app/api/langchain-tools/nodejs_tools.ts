@@ -86,6 +86,8 @@ export class NodeJSTool {
         new MyFilesBrowser(this.sessionId, this.model, this.ragEmbeddings),
       );
     }
+    console.log("尝试定位tools故障：", JSON.stringify(tools, null, 2));
+
     return tools;
   }
 }

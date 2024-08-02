@@ -1,3 +1,4 @@
+//app/api/langchain-tools/post2wordpress.ts
 import { Tool } from "@langchain/core/tools";
 import fetch, { HeadersInit, RequestInit } from "node-fetch";
 
@@ -9,6 +10,7 @@ export interface RequestTool {
 
 export class Post2WordPressTool extends Tool implements RequestTool {
   name = "post2wordpress";
+  lc_serializable = true;
   maxOutputLength = Infinity;
   timeout = 30000;
 
