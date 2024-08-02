@@ -26,6 +26,9 @@ export class Post2WordPressTool extends Tool implements RequestTool {
 
   /** @ignore */
   async _call(input: any) {
+    if (input === undefined) {
+      return "FAIL: 输入格式不正确，请使用JSON格式。" + input;
+    }
     console.log(`_call method started with input: ${JSON.stringify(input)}`);
 
     let parsedInput: { title: string; content: string };
