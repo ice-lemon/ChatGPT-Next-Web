@@ -8,7 +8,7 @@ export interface RequestTool {
 }
 
 export class Post2WordPressTool extends Tool implements RequestTool {
-  name = "post2wordpress";
+  name = "post2wordpressTool";
   maxOutputLength = Infinity;
   timeout = 30000;
 
