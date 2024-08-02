@@ -34,7 +34,7 @@ export class Post2WordPressTool extends Tool implements RequestTool {
         parsedInput = JSON.parse(input);
       } catch (error) {
         console.error("Failed to parse input as JSON.", error);
-        return "FAIL: 输入格式不正确，请使用JSON格式。";
+        return "FAIL: 输入格式不正确，请使用JSON格式。" + input;
       }
     } else {
       parsedInput = input;
