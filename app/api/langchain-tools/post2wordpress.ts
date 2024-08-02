@@ -7,13 +7,6 @@ export interface RequestTool {
   timeout: number;
 }
 
-interface JWTResponse {
-  token_type: string;
-  iat: number;
-  expires_in: number;
-  jwt_token: string;
-}
-
 export class Post2WordPressTool extends Tool implements RequestTool {
   name = "post2wordpress";
   maxOutputLength = Infinity;
@@ -40,16 +33,17 @@ export class Post2WordPressTool extends Tool implements RequestTool {
         parsedInput = JSON.parse(input);
       } catch (error) {
         console.error("Failed to parse input as JSON.", error);
-        return "FAIL: Input is not valid JSON.";
+        return "FAIL: 输入格式不正确，请使用JSON格式。"; // 使用中文备注
       }
     } else {
       parsedInput = input;
     }
 
-    const { title, content } = parsedInput;
-    if (!title || !content) {
-      console.error("Title or content is missing in the input.");
-      return "FAIL: Title or content is missing.";
+    // 只接受一个参数，默认作为content，title使用默认值
+    const { content = "", title = "默认标题" } = parsedInput;
+    if (!content) {
+      console.error("文章内容不能为空。");
+      return "FAIL: 文章内容不能为空。"; // 使用中文备注
     }
 
     try {
@@ -61,34 +55,28 @@ export class Post2WordPressTool extends Tool implements RequestTool {
       return (error as Error).toString();
     }
   }
-
   async postToWordPress(title: string, content: string): Promise<string> {
     console.log(
       `postToWordPress method started with title: ${title}, content: ${content}`,
     );
 
     const wpApiUrl = process.env.WP_POST_API_URL;
-
-    const wpApiPassword = process.env.WP_PASSWORD;
     const wpUser = process.env.WP_USER;
-    console.log(`WP_API_URL: ${process.env.WP_POST_API_URL}`);
-    console.log(`WP_USER: ${process.env.WP_USER}`);
-    console.log(`WP_USER: ${process.env.WP_PASSWORD}`);
+    const wpPassword = process.env.WP_PASSWORD;
 
-    if (!wpApiUrl || !wpApiPassword || !wpUser) {
+    console.log(`WP_API_URL: ${wpApiUrl}`);
+    console.log(`WP_USER: ${wpUser}`);
+
+    if (!wpApiUrl || !wpUser || !wpPassword) {
       return "FAIL: Missing required environment variables.";
     }
 
-    const token = await this.getJWTToken(wpUser, wpApiPassword);
-    console.log(`WP_token: ${token}`);
-
-    if (!token) {
-      return "FAIL: Unable to retrieve JWT token.";
-    }
+    const authToken = Buffer.from(`${wpUser}:${wpPassword}`).toString("base64");
+    console.log(`Base64 auth token: ${authToken}`); // This line should be removed in production
 
     const headers: HeadersInit = {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      Authorization: `Basic ${authToken}`,
     };
     console.log(`Request headers: ${JSON.stringify(headers)}`);
 
@@ -124,36 +112,6 @@ export class Post2WordPressTool extends Tool implements RequestTool {
     } catch (error) {
       console.error(`postToWordPress method encountered an error: ${error}`);
       return `FAIL: ${error}`;
-    }
-  }
-
-  async getJWTToken(
-    username: string,
-    password: string,
-  ): Promise<string | null> {
-    try {
-      const wpAuthApiUrl = process.env.WP_AUTH_API_URL;
-
-      const response = await fetch(`${wpAuthApiUrl}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (!response.ok) {
-        console.error(
-          `Failed to get JWT token. HTTP status: ${response.status}`,
-        );
-        return null;
-      }
-
-      const data = (await response.json()) as JWTResponse;
-      return data.jwt_token;
-    } catch (error) {
-      console.error(`Error fetching JWT token: ${error}`);
-      return null;
     }
   }
 

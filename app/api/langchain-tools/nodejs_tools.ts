@@ -62,19 +62,7 @@ export class NodeJSTool {
     const bilibiliVideoInfoTool = new BilibiliVideoInfoTool();
     const weatherinfotool = new WeatherInfoTool();
 
-    // 获取 WordPress 相关的环境变量
-    const headers = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.WP_AUTH_TOKEN}`,
-    };
-    const maxOutputLength = 20000;
-    const timeout = 30000;
-
-    const post2wordpressTool = new Post2WordPressTool(
-      headers,
-      { maxOutputLength },
-      { timeout },
-    );
+    const post2wordpressTool = new Post2WordPressTool();
     const bilibiliVideoSearchTool = new BilibiliVideoSearchTool();
     const bilibiliVideoConclusionTool = new BilibiliVideoConclusionTool();
     const bilibiliMusicRecognitionTool = new BilibiliMusicRecognitionTool();
